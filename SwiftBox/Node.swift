@@ -13,16 +13,21 @@ public struct Edges {
 	public let right: CGFloat
 	public let bottom: CGFloat
 	public let top: CGFloat
+    
+    public let start: CGFloat
+    public let end: CGFloat
 
-	private var asTuple: (Float, Float, Float, Float) {
-		return (Float(left), Float(top), Float(right), Float(bottom))
+	private var asTuple: (Float, Float, Float, Float, Float, Float) {
+		return (Float(left), Float(top), Float(right), Float(bottom), Float(start), Float(end))
 	}
 
-	public init(left: CGFloat = 0, right: CGFloat = 0, bottom: CGFloat = 0, top: CGFloat = 0) {
+	public init(left: CGFloat = 0, right: CGFloat = 0, bottom: CGFloat = 0, top: CGFloat = 0, start: CGFloat = 0, end: CGFloat = 0) {
 		self.left = left
 		self.right = right
 		self.bottom = bottom
-		self.top = top
+        self.top = top
+        self.start = start
+        self.end = end
 	}
 
 	public init(uniform: CGFloat) {
@@ -30,12 +35,17 @@ public struct Edges {
 		self.right = uniform
 		self.bottom = uniform
 		self.top = uniform
+        
+        self.start = 0
+        self.end = 0
 	}
 }
 
 public enum Direction: UInt32 {
-	case Column = 0
-	case Row = 1
+    case Column = 0
+    case ColumnReverse = 1
+    case Row = 2
+    case RowReverse = 3
 }
 
 public enum Justification: UInt32 {
@@ -67,7 +77,9 @@ public struct Node {
 	/// fill in.
 	public static let Undefined: CGFloat = nan("SwiftBox.Node.Undefined")
 
-	public let size: CGSize
+    public let size: CGSize
+    public let minSize: CGSize
+    public let maxSize: CGSize
 	public let children: [Node]
 	public let direction: Direction
 	public let margin: Edges
@@ -79,8 +91,10 @@ public struct Node {
 	public let flex: CGFloat
 	public let measure: (CGFloat -> CGSize)?
 
-	public init(size: CGSize = CGSize(width: Undefined, height: Undefined), children: [Node] = [], direction: Direction = .Column, margin: Edges = Edges(), padding: Edges = Edges(), wrap: Bool = false, justification: Justification = .FlexStart, selfAlignment: SelfAlignment = .Auto, childAlignment: ChildAlignment = .Stretch, flex: CGFloat = 0, measure: (CGFloat -> CGSize)? = nil) {
+	public init(size: CGSize = CGSize(width: Undefined, height: Undefined), minSize: CGSize = CGSize(width: Undefined, height: Undefined), maxSize: CGSize = CGSize(width: Undefined, height: Undefined), children: [Node] = [], direction: Direction = .Column, margin: Edges = Edges(), padding: Edges = Edges(), wrap: Bool = false, justification: Justification = .FlexStart, selfAlignment: SelfAlignment = .Auto, childAlignment: ChildAlignment = .Stretch, flex: CGFloat = 0, measure: (CGFloat -> CGSize)? = nil) {
 		self.size = size
+        self.minSize = minSize
+        self.maxSize = maxSize
 		self.children = children
 		self.direction = direction
 		self.margin = margin
@@ -95,7 +109,9 @@ public struct Node {
 
 	private func createUnderlyingNode() -> NodeImpl {
 		let node = NodeImpl()
-		node.node.memory.style.dimensions = (Float(size.width), Float(size.height))
+        node.node.memory.style.dimensions = (Float(size.width), Float(size.height))
+        node.node.memory.style.minDimensions = (Float(minSize.width), Float(minSize.height))
+        node.node.memory.style.maxDimensions = (Float(maxSize.width), Float(maxSize.height))
 		node.node.memory.style.margin = margin.asTuple
 		node.node.memory.style.padding = padding.asTuple
 		node.node.memory.style.flex = Float(flex)
