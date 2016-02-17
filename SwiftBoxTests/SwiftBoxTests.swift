@@ -62,6 +62,21 @@ class SwiftBoxTests: XCTestCase {
 		_ = node.layout(maxWidth: maxWidth)
 		XCTAssertEqual(maxWidthGiven, maxWidth)
 	}
+    
+    func testPadding() {
+        let parent = Node(size: CGSize(width: 300, height: 300),
+            childAlignment: .Center,
+            direction: .Row,
+            padding: Edges(left: 10),
+            children: [
+                Node(flex: 0,
+                    size: CGSize(width: 0, height: 100))
+            ])
+        
+        let layout = parent.layout()
+        let nodeFrame = layout.children.first?.frame ?? .zero
+        XCTAssertEqual(nodeFrame.origin.x, 10, "sub node has a padding of 10")
+    }
 	
 	func testUndefinedPoint() {
 		XCTAssertFalse(CGPoint.zero.isUndefined, "ordinary point is not undefined")
